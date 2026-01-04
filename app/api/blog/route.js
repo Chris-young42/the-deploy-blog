@@ -31,7 +31,7 @@ export async function POST(request) {
   const buffer = Buffer.from(imageByteData);
   const path = `./public/${timestamp}_${image.name}`;
   await writeFile(path, buffer);
-  const imgUrl = `/${timestamp}_${image.name}`;
+  const imgUrl = `/api/images/${timestamp}_${image.name}`;
   const blogData = {
     title: `${formData.get("title")}`,
     category: `${formData.get("category")}`,
@@ -49,7 +49,10 @@ export async function POST(request) {
 export async function DELETE(requset) {
   const id = await requset.nextUrl.searchParams.get("id");
   const blog = await BlogModel.findById(id);
-  fs.unlink(`./public/${blog.image}`, () => {});
+  const imagePath = blog.image.startsWith("/api/images/")
+    ? blog.image.replace("/api/images/", "")
+    : blog.image.replace("/", "");
+  fs.unlink(`./public/${imagePath}`, () => {});
   await BlogModel.findByIdAndDelete(id);
   return NextResponse.json({ msg: "Blog deleted" });
 }
